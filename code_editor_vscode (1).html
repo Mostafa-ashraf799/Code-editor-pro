@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Code Editor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/php/php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/ruby/ruby.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/go/go.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/rust/rust.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/swift/swift.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/sql/sql.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/shell/shell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/markdown/markdown.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/yaml/yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/r/r.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/javascript-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/html-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/css-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/selection/active-line.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(138, 43, 226, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(138, 43, 226, 0.6); }
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 50%, #16213e 100%);
+            color: #e4e4e7;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(138, 43, 226, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            background: rgba(26, 26, 46, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(138, 43, 226, 0.3);
+            padding: 20px 30px;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .logo-icon {
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .toolbar-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(139, 92, 246, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 6px 25px rgba(16, 185, 129, 0.5);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 6px 25px rgba(239, 68, 68, 0.5);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-warning:hover {
+            box-shadow: 0 6px 25px rgba(245, 158, 11, 0.5);
+        }
+
+        select, input {
+            background: rgba(30, 30, 46, 0.9);
+            color: #e4e4e7;
+            border: 2px solid rgba(139, 92, 246, 0.3);
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        select:focus, input:focus {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+        }
+
+        input {
+            width: 280px;
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            gap: 0;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: rgba(26, 26, 46, 0.9);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(139, 92, 246, 0.3);
+            overflow-y: auto;
+            padding: 25px;
+            animation: slideIn 0.8s ease-out;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(30, 30, 46, 0.5);
+            border-radius: 10px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            border-radius: 10px;
+        }
+
+        .sidebar h3 {
+            color: #e4e4e7;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .project-item {
+            background: rgba(30, 30, 46, 0.7);
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            animation: slideIn 0.4s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .project-item:hover {
+            background: rgba(40, 40, 60, 0.9);
+            border-color: rgba(139, 92, 246, 0.5);
+            transform: translateX(-5px);
+        }
+
+        .project-item:hover::before {
+            opacity: 1;
+        }
+
+        .project-item.active {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.2));
+            border-color: #8b5cf6;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .project-item.active::before {
+            opacity: 1;
+        }
+
+        .project-name {
+            font-size: 15px;
+            color: #e4e4e7;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .project-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .project-lang {
+            font-size: 12px;
+            color: #a1a1aa;
+            padding: 4px 10px;
+            background: rgba(139, 92, 246, 0.2);
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .project-date {
+            font-size: 11px;
+            color: #71717a;
+        }
+
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .CodeMirror {
+            height: 100% !important;
+            font-size: 15px;
+            font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+            line-height: 1.6;
+        }
+
+        .output-panel {
+            height: 45%;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 2px solid rgba(139, 92, 246, 0.5);
+            display: none;
+            flex-direction: column;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        .output-panel.active {
+            display: flex;
+        }
+
+        .output-header {
+            background: rgba(30, 30, 46, 0.9);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .output-header h4 {
+            font-size: 15px;
+            color: #e4e4e7;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .output-content {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+        }
+
+        .output-content::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        .output-content::-webkit-scrollbar-track {
+            background: rgba(30, 30, 46, 0.5);
+        }
+
+        .output-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            border-radius: 10px;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .console-output {
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 14px;
+            color: #e4e4e7;
+            white-space: pre-wrap;
+            line-height: 1.8;
+            padding: 15px;
+            background: rgba(30, 30, 46, 0.5);
+            border-radius: 8px;
+            border-left: 4px solid #8b5cf6;
+        }
+
+        .delete-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            opacity: 0;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
+
+        .project-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .delete-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .status-bar {
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            color: white;
+            padding: 8px 30px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            box-shadow: 0 -2px 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #71717a;
+            font-size: 15px;
+            gap: 15px;
+        }
+
+        .empty-state-icon {
+            font-size: 60px;
+            opacity: 0.3;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 30px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
+            z-index: 1000;
+            animation: slideIn 0.4s ease-out;
+            font-weight: 600;
+            display: none;
+        }
+
+        .notification.show {
+            display: block;
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 8px 30px rgba(239, 68, 68, 0.4);
+        }
+
+        .lang-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(139, 92, 246, 0.2);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #a78bfa;
+        }
+    </style>
+</head>
+<body>
+    <div class="notification" id="notification"></div>
+    
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <div class="logo">
+                    <div class="logo-icon">⚡</div>
+                    <span>Pro Code Editor</span>
+                </div>
+            </div>
+            <div class="toolbar">
+                <div class="toolbar-group">
+                    <input type="text" id="projectName" placeholder="اسم المشروع الجديد...">
+                    <select id="languageSelect">
+                        <option value="htmlmixed">🌐 HTML</option>
+                        <option value="css">🎨 CSS</option>
+                        <option value="javascript">⚡ JavaScript</option>
+                        <option value="python">🐍 Python</option>
+                        <option value="text/x-java">☕ Java</option>
+                        <option value="text/x-c++src">⚙️ C++</option>
+                        <option value="text/x-csrc">🔧 C</option>
+                        <option value="text/x-csharp">💠 C#</option>
+                        <option value="text/x-php">🐘 PHP</option>
+                        <option value="ruby">💎 Ruby</option>
+                        <option value="go">🔵 Go</option>
+                        <option value="rust">🦀 Rust</option>
+                        <option value="swift">🍎 Swift</option>
+                        <option value="text/x-kotlin">🎯 Kotlin</option>
+                        <option value="sql">🗄️ SQL</option>
+                        <option value="shell">🖥️ Shell/Bash</option>
+                        <option value="r">📊 R</option>
+                        <option value="text/x-scala">⚡ Scala</option>
+                        <option value="perl">🐪 Perl</option>
+                        <option value="lua">🌙 Lua</option>
+                        <option value="dart">🎯 Dart</option>
+                        <option value="text/typescript">📘 TypeScript</option>
+                        <option value="markdown">📝 Markdown</option>
+                        <option value="yaml">⚙️ YAML</option>
+                        <option value="text/x-objectivec">📱 Objective-C</option>
+                    </select>
+                </div>
+                <div class="toolbar-group">
+                    <button class="btn" onclick="saveProject()">💾 حفظ</button>
+                    <button class="btn btn-success" onclick="runCode()">▶️ تشغيل</button>
+                    <button class="btn btn-warning" onclick="newProject()">📄 جديد</button>
+                    <button class="btn" onclick="document.getElementById('fileInput').click()">📁 رفع ملف</button>
+                    <button class="btn" onclick="downloadFile()">⬇️ تحميل</button>
+                    <button class="btn btn-danger" onclick="clearOutput()">🗑️ مسح</button>
+                    <input type="file" id="fileInput" style="display: none;" accept=".html,.css,.js,.py,.java,.cpp,.c,.cs,.php,.rb,.go,.rs,.swift,.kt,.sql,.sh,.r,.scala,.pl,.lua,.dart,.ts,.md,.yml,.yaml,.m,.jsx,.tsx,.json,.xml" onchange="uploadFile(event)">
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="editor-container">
+                <textarea id="codeEditor"></textarea>
+                <div class="output-panel" id="outputPanel">
+                    <div class="output-header">
+                        <h4>🖥️ نافذة التشغيل والنتائج</h4>
+                        <button class="btn btn-small" onclick="toggleOutput()">إخفاء</button>
+                    </div>
+                    <div class="output-content" id="outputContent"></div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <h3>📁 المشاريع المحفوظة</h3>
+                <div id="projectsList"></div>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <span id="currentProject">💻 جاهز للبرمجة</span>
+            <span id="lineCount">السطر 1، العمود 1</span>
+        </div>
+    </div>
+
+    <script>
+        let editor;
+        let currentProjectId = null;
+
+        // قوالب البداية لكل لغة
+        const templates = {
+            'htmlmixed': '<!DOCTYPE html>\n<html lang="ar">\n<head>\n    <meta charset="UTF-8">\n    <title>مشروعي</title>\n</head>\n<body>\n    <h1>مرحباً بالعالم!</h1>\n</body>\n</html>',
+            'css': '/* ملف التنسيقات */\nbody {\n    font-family: Arial, sans-serif;\n    background: #f0f0f0;\n    margin: 0;\n    padding: 20px;\n}\n\nh1 {\n    color: #333;\n}',
+            'javascript': '// برنامج JavaScript\nconsole.log("مرحباً بالعالم!");\n\nfunction greet(name) {\n    return `مرحباً ${name}`;\n}\n\nconsole.log(greet("المبرمج"));',
+            'python': '# برنامج Python\nprint("مرحباً بالعالم!")\n\ndef greet(name):\n    return f"مرحباً {name}"\n\nprint(greet("المبرمج"))',
+            'text/x-java': 'public class Main {\n    public static void main(String[] args) {\n        System.out.println("مرحباً بالعالم!");\n    }\n}',
+            'text/x-c++src': '#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "مرحباً بالعالم!" << endl;\n    return 0;\n}',
+            'text/x-csrc': '#include <stdio.h>\n\nint main() {\n    printf("مرحباً بالعالم!\\n");\n    return 0;\n}',
+            'text/x-csharp': 'using System;\n\nclass Program {\n    static void Main() {\n        Console.WriteLine("مرحباً بالعالم!");\n    }\n}',
+            'text/x-php': '<?php\n// برنامج PHP\necho "مرحباً بالعالم!";\n\nfunction greet($name) {\n    return "مرحباً " . $name;\n}\n\necho greet("المبرمج");\n?>',
+            'ruby': '# برنامج Ruby\nputs "مرحباً بالعالم!"\n\ndef greet(name)\n    "مرحباً #{name}"\nend\n\nputs greet("المبرمج")',
+            'go': 'package main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("مرحباً بالعالم!")\n}',
+            'rust': 'fn main() {\n    println!("مرحباً بالعالم!");\n}',
+            'swift': 'import Foundation\n\nprint("مرحباً بالعالم!")\n\nfunc greet(name: String) -> String {\n    return "مرحباً \\(name)"\n}\n\nprint(greet(name: "المبرمج"))',
+            'text/x-kotlin': 'fun main() {\n    println("مرحباً بالعالم!")\n    \n    fun greet(name: String): String {\n        return "مرحباً $name"\n    }\n    \n    println(greet("المبرمج"))\n}',
+            'sql': '-- استعلام SQL\nSELECT * FROM users WHERE active = 1;\n\nCREATE TABLE products (\n    id INT PRIMARY KEY,\n    name VARCHAR(100),\n    price DECIMAL(10, 2)\n);',
+            'shell': '#!/bin/bash\n# سكربت Bash\n\necho "مرحباً بالعالم!"\n\ngreet() {\n    echo "مرحباً $1"\n}\n\ngreet "المبرمج"',
+            'r': '# برنامج R\nprint("مرحباً بالعالم!")\n\ngreet <- function(name) {\n    paste("مرحباً", name)\n}\n\nprint(greet("المبرمج"))',
+            'text/x-scala': 'object Main extends App {\n    println("مرحباً بالعالم!")\n    \n    def greet(name: String): String = {\n        s"مرحباً $name"\n    }\n    \n    println(greet("المبرمج"))\n}',
+            'perl': '#!/usr/bin/perl\n# برنامج Perl\nuse strict;\nuse warnings;\n\nprint "مرحباً بالعالم!\\n";\n\nsub greet {\n    my $name = shift;\n    return "مرحباً $name";\n}\n\nprint greet("المبرمج") . "\\n";',
+            'lua': '-- برنامج Lua\nprint("مرحباً بالعالم!")\n\nfunction greet(name)\n    return "مرحباً " .. name\nend\n\nprint(greet("المبرمج"))',
+            'dart': 'void main() {\n    print(\'مرحباً بالعالم!\');\n    \n    String greet(String name) {\n        return \'مرحباً $name\';\n    }\n    \n    print(greet(\'المبرمج\'));\n}',
+            'text/typescript': '// برنامج TypeScript\nconsole.log("مرحباً بالعالم!");\n\nfunction greet(name: string): string {\n    return `مرحباً ${name}`;\n}\n\nconsole.log(greet("المبرمج"));',
+            'markdown': '# عنوان المشروع\n\n## مقدمة\nهذا مشروع جديد\n\n### المميزات\n- ميزة 1\n- ميزة 2\n- ميزة 3\n\n```javascript\nconsole.log("مرحباً");\n```',
+            'yaml': '# ملف YAML\nproject:\n  name: "مشروعي"\n  version: "1.0.0"\n  author: "المبرمج"\n\nconfig:\n  debug: true\n  port: 8080',
+            'text/x-objectivec': '#import <Foundation/Foundation.h>\n\nint main() {\n    @autoreleasepool {\n        NSLog(@"مرحباً بالعالم!");\n    }\n    return 0;\n}'
+        };
+
+        // تهيئة المحرر
+        editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
+            mode: 'htmlmixed',
+            theme: 'dracula',
+            lineNumbers: true,
+            autoCloseBrackets: true,
+            matchBrackets: true,
+            indentUnit: 4,
+            indentWithTabs: false,
+            lineWrapping: true,
+            styleActiveLine: true,
+            extraKeys: {
+                "Ctrl-Space": "autocomplete",
+                "Ctrl-S": function() { saveProject(); return false; },
+                "F5": function() { runCode(); return false; }
+            }
+        });
+
+        editor.setSize('100%', '100%');
+        editor.setValue(templates['htmlmixed']);
+
+        // تحديث عدد الأسطر
+        editor.on('cursorActivity', function() {
+            const cursor = editor.getCursor();
+            document.getElementById('lineCount').textContent = `السطر ${cursor.line + 1}، العمود ${cursor.ch + 1}`;
+        });
+
+        // تغيير اللغة
+        document.getElementById('languageSelect').addEventListener('change', function(e) {
+            const lang = e.target.value;
+            editor.setOption('mode', lang);
+            
+            // إذا كان المحرر فارغاً، ضع القالب
+            if (editor.getValue().trim() === '' || confirm('هل تريد تحميل قالب اللغة الجديدة؟')) {
+                editor.setValue(templates[lang] || '// ابدأ البرمجة هنا...');
+            }
+        });
+
+        // إظهار إشعار
+        function showNotification(message, isError = false) {
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.className = 'notification show' + (isError ? ' error' : '');
+            setTimeout(() => {
+                notif.classList.remove('show');
+            }, 3000);
+        }
+
+        // مشروع جديد
+        function newProject() {
+            if (confirm('هل تريد إنشاء مشروع جديد؟ سيتم مسح المحتوى الحالي.')) {
+                const lang = document.getElementById('languageSelect').value;
+                editor.setValue(templates[lang] || '');
+                document.getElementById('projectName').value = '';
+                currentProjectId = null;
+                updateStatusBar('💻 جاهز للبرمجة');
+                showNotification('✨ تم إنشاء مشروع جديد');
+            }
+        }
+
+        // حفظ المشروع
+        function saveProject() {
+            const name = document.getElementById('projectName').value.trim();
+            if (!name) {
+                showNotification('⚠️ يرجى إدخال اسم المشروع', true);
+                return;
+            }
+
+            const code = editor.getValue();
+            const language = document.getElementById('languageSelect').value;
+            
+            const project = {
+                id: currentProjectId || Date.now().toString(),
+                name: name,
+                code: code,
+                language: language,
+                lastModified: new Date().toLocaleString('ar-EG')
+            };
+
+            let projects = JSON.parse(localStorage.getItem('codeProjects') || '[]');
+            
+            if (currentProjectId) {
+                projects = projects.map(p => p.id === currentProjectId ? project : p);
+                showNotification('✅ تم تحديث المشروع بنجاح');
+            } else {
+                projects.push(project);
+                currentProjectId = project.id;
+                showNotification('✅ تم حفظ المشروع بنجاح');
+            }
+
+            localStorage.setItem('codeProjects', JSON.stringify(projects));
+            loadProjects();
+            updateStatusBar(name);
+        }
+
+        // تحميل المشاريع
+        function loadProjects() {
+            const projects = JSON.parse(localStorage.getItem('codeProjects') || '[]');
+            const projectsList = document.getElementById('projectsList');
+            
+            if (projects.length === 0) {
+                projectsList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📂</div>لا توجد مشاريع محفوظة بعد</div>';
+                return;
+            }
+
+            projectsList.innerHTML = projects.map(project => `
+                <div class="project-item ${project.id === currentProjectId ? 'active' : ''}" onclick="loadProject('${project.id}')">
+                    <div class="project-name">📝 ${project.name}</div>
+                    <div class="project-meta">
+                        <span class="project-lang">${getLanguageEmoji(project.language)} ${getLanguageName(project.language)}</span>
+                    </div>
+                    <div class="project-date">📅 ${project.lastModified}</div>
+                    <button class="delete-btn" onclick="deleteProject(event, '${project.id}')">🗑️ حذف</button>
+                </div>
+            `).join('');
+        }
+
+        // تحميل مشروع معين
+        function loadProject(id) {
+            const projects = JSON.parse(localStorage.getItem('codeProjects') || '[]');
+            const project = projects.find(p => p.id === id);
+            
+            if (project) {
+                editor.setValue(project.code);
+                document.getElementById('languageSelect').value = project.language;
+                document.getElementById('projectName').value = project.name;
+                editor.setOption('mode', project.language);
+                currentProjectId = project.id;
+                updateStatusBar(project.name);
+                loadProjects();
+                showNotification('📂 تم تحميل المشروع');
+            }
+        }
+
+        // حذف مشروع
+        function deleteProject(event, id) {
+            event.stopPropagation();
+            if (confirm('🗑️ هل أنت متأكد من حذف هذا المشروع؟')) {
+                let projects = JSON.parse(localStorage.getItem('codeProjects') || '[]');
+                projects = projects.filter(p => p.id !== id);
+                localStorage.setItem('codeProjects', JSON.stringify(projects));
+                
+                if (currentProjectId === id) {
+                    currentProjectId = null;
+                    const lang = document.getElementById('languageSelect').value;
+                    editor.setValue(templates[lang] || '');
+                    document.getElementById('projectName').value = '';
+                    updateStatusBar('💻 جاهز للبرمجة');
+                }
+                
+                loadProjects();
+                showNotification('🗑️ تم حذف المشروع');
+            }
+        }
+
+        // تشغيل الكود
+        function runCode() {
+            const code = editor.getValue();
+            const language = document.getElementById('languageSelect').value;
+            const outputPanel = document.getElementById('outputPanel');
+            const outputContent = document.getElementById('outputContent');
+            
+            outputPanel.classList.add('active');
+            outputContent.innerHTML = '';
+
+            if (language === 'htmlmixed' || language === 'html') {
+                const iframe = document.createElement('iframe');
+                iframe.srcdoc = code;
+                outputContent.appendChild(iframe);
+                showNotification('▶️ تم تشغيل HTML بنجاح');
+            } else if (language === 'javascript' || language === 'text/typescript') {
+                const iframe = document.createElement('iframe');
+                iframe.srcdoc = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <style>
+                            body { 
+                                font-family: 'Fira Code', monospace; 
+                                padding: 15px; 
+                                background: #1e1e2e;
+                                color: #e4e4e7;
+                            }
+                            .log { 
+                                padding: 8px; 
+                                margin: 5px 0; 
+                                border-radius: 6px;
+                                border-left: 4px solid #8b5cf6;
+                                background: rgba(139, 92, 246, 0.1);
+                            }
+                            .error { 
+                                border-left-color: #ef4444;
+                                background: rgba(239, 68, 68, 0.1);
+                                color: #fca5a5;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <script>
+                            console.log = function(...args) {
+                                const div = document.createElement('div');
+                                div.className = 'log';
+                                div.textContent = '> ' + args.map(a => 
+                                    typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)
+                                ).join(' ');
+                                document.body.appendChild(div);
+                            };
+                            console.error = function(...args) {
+                                const div = document.createElement('div');
+                                div.className = 'log error';
+                                div.textContent = '❌ Error: ' + args.join(' ');
+                                document.body.appendChild(div);
+                            };
+                            try {
+                                ${code}
+                            } catch(e) {
+                                console.error(e.message);
+                            }
+                        <\/script>
+                    </body>
+                    </html>
+                `;
+                outputContent.appendChild(iframe);
+                showNotification('▶️ تم تشغيل JavaScript بنجاح');
+            } else if (language === 'css') {
+                const iframe = document.createElement('iframe');
+                iframe.srcdoc = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <style>${code}</style>
+                    </head>
+                    <body style="padding: 20px; background: white;">
+                        <h1>عنوان تجريبي</h1>
+                        <p>هذا نص تجريبي لعرض تأثيرات CSS.</p>
+                        <button>زر تجريبي</button>
+                        <div style="width: 200px; height: 200px; background: lightblue; margin: 20px;">صندوق تجريبي</div>
+                        <ul>
+                            <li>عنصر قائمة 1</li>
+                            <li>عنصر قائمة 2</li>
+                            <li>عنصر قائمة 3</li>
+                        </ul>
+                    </body>
+                    </html>
+                `;
+                outputContent.appendChild(iframe);
+                showNotification('▶️ تم تشغيل CSS بنجاح');
+            } else {
+                outputContent.innerHTML = `
+                    <div class="console-output">
+                        <div style="font-size: 18px; margin-bottom: 15px;">⚡ معلومات التشغيل</div>
+                        <div style="color: #fbbf24; margin-bottom: 10px;">⚠️ اللغة: ${getLanguageName(language)}</div>
+                        <div style="margin-bottom: 15px;">التشغيل المباشر في المتصفح متاح فقط لـ HTML, CSS, و JavaScript.</div>
+                        <div style="padding: 15px; background: rgba(139, 92, 246, 0.1); border-radius: 8px; border-left: 4px solid #8b5cf6;">
+                            <div style="font-weight: bold; margin-bottom: 10px;">💡 لتشغيل هذا الكود:</div>
+                            <div>1️⃣ اضغط على زر "تحميل" لحفظ الملف</div>
+                            <div>2️⃣ استخدم المترجم/المفسر المناسب للغة ${getLanguageName(language)}</div>
+                            <div>3️⃣ أو استخدم IDE مثل Visual Studio Code أو PyCharm</div>
+                        </div>
+                        <div style="margin-top: 20px; padding: 15px; background: rgba(59, 130, 246, 0.1); border-radius: 8px; border-left: 4px solid #3b82f6;">
+                            <div style="font-weight: bold; margin-bottom: 10px;">📝 كودك جاهز!</div>
+                            <div>عدد الأسطر: ${code.split('\n').length}</div>
+                            <div>عدد الأحرف: ${code.length}</div>
+                        </div>
+                    </div>
+                `;
+                showNotification('ℹ️ استخدم بيئة التطوير المناسبة لتشغيل ' + getLanguageName(language));
+            }
+        }
+
+        // مسح النتيجة
+        function clearOutput() {
+            document.getElementById('outputContent').innerHTML = '';
+            document.getElementById('outputPanel').classList.remove('active');
+            showNotification('🗑️ تم مسح النتيجة');
+        }
+
+        // إخفاء/إظهار النتيجة
+        function toggleOutput() {
+            document.getElementById('outputPanel').classList.toggle('active');
+        }
+
+        // تحميل الملف
+        function downloadFile() {
+            const code = editor.getValue();
+            const language = document.getElementById('languageSelect').value;
+            const name = document.getElementById('projectName').value.trim() || 'untitled';
+            
+            const extensions = {
+                'htmlmixed': 'html',
+                'html': 'html',
+                'css': 'css',
+                'javascript': 'js',
+                'python': 'py',
+                'text/x-java': 'java',
+                'text/x-c++src': 'cpp',
+                'text/x-csrc': 'c',
+                'text/x-csharp': 'cs',
+                'text/x-php': 'php',
+                'ruby': 'rb',
+                'go': 'go',
+                'rust': 'rs',
+                'swift': 'swift',
+                'text/x-kotlin': 'kt',
+                'sql': 'sql',
+                'shell': 'sh',
+                'r': 'r',
+                'text/x-scala': 'scala',
+                'perl': 'pl',
+                'lua': 'lua',
+                'dart': 'dart',
+                'text/typescript': 'ts',
+                'markdown': 'md',
+                'yaml': 'yml',
+                'text/x-objectivec': 'm'
+            };
+
+            const ext = extensions[language] || 'txt';
+            const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${name}.${ext}`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showNotification(`⬇️ تم تحميل ${name}.${ext}`);
+        }
+
+        // الحصول على اسم اللغة
+        function getLanguageName(mode) {
+            const names = {
+                'htmlmixed': 'HTML',
+                'html': 'HTML',
+                'css': 'CSS',
+                'javascript': 'JavaScript',
+                'python': 'Python',
+                'text/x-java': 'Java',
+                'text/x-c++src': 'C++',
+                'text/x-csrc': 'C',
+                'text/x-csharp': 'C#',
+                'text/x-php': 'PHP',
+                'ruby': 'Ruby',
+                'go': 'Go',
+                'rust': 'Rust',
+                'swift': 'Swift',
+                'text/x-kotlin': 'Kotlin',
+                'sql': 'SQL',
+                'shell': 'Shell',
+                'r': 'R',
+                'text/x-scala': 'Scala',
+                'perl': 'Perl',
+                'lua': 'Lua',
+                'dart': 'Dart',
+                'text/typescript': 'TypeScript',
+                'markdown': 'Markdown',
+                'yaml': 'YAML',
+                'text/x-objectivec': 'Objective-C'
+            };
+            return names[mode] || mode;
+        }
+
+        // الحصول على emoji اللغة
+        function getLanguageEmoji(mode) {
+            const emojis = {
+                'htmlmixed': '🌐',
+                'css': '🎨',
+                'javascript': '⚡',
+                'python': '🐍',
+                'text/x-java': '☕',
+                'text/x-c++src': '⚙️',
+                'text/x-csrc': '🔧',
+                'text/x-csharp': '💠',
+                'text/x-php': '🐘',
+                'ruby': '💎',
+                'go': '🔵',
+                'rust': '🦀',
+                'swift': '🍎',
+                'text/x-kotlin': '🎯',
+                'sql': '🗄️',
+                'shell': '🖥️',
+                'r': '📊',
+                'text/x-scala': '⚡',
+                'perl': '🐪',
+                'lua': '🌙',
+                'dart': '🎯',
+                'text/typescript': '📘',
+                'markdown': '📝',
+                'yaml': '⚙️',
+                'text/x-objectivec': '📱'
+            };
+            return emojis[mode] || '📄';
+        }
+
+        // تحديث شريط الحالة
+        function updateStatusBar(projectName) {
+            document.getElementById('currentProject').textContent = '📂 ' + projectName;
+        }
+
+        // تحميل المشاريع عند بدء التشغيل
+        loadProjects();
+
+        // اختصارات لوحة المفاتيح
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                saveProject();
+            }
+            if (e.key === 'F5') {
+                e.preventDefault();
+                runCode();
+            }
+        });
+    </script>
+</body>
+</html>
